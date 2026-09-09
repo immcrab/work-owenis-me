@@ -41,10 +41,17 @@ jobs:
           rsync -a --exclude='vercel.json' upstream/ _site/
           # ghostlinksinglefile.html becomes the landing page
           cp _site/ghostlinksinglefile.html _site/index.html
+          # The single-file build loads its proxy worker + service worker from
+          # the site root, so hoist them out of proxy/ (Vercel did this via
+          # vercel.json rewrites, which we dropped).
+          cp upstream/proxy/sw.js _site/sw.js
+          cp upstream/proxy/bareworker.js _site/bareworker.js
           # Custom domain + skip Jekyll processing
           cp CNAME _site/CNAME
           touch _site/.nojekyll
           test -s _site/index.html
+          test -s _site/sw.js
+          test -s _site/bareworker.js
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
