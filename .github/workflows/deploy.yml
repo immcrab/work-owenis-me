@@ -53,6 +53,17 @@ jobs:
           test -s _site/sw.js
           test -s _site/bareworker.js
 
+      - name: Inject ads
+        env:
+          # Optional: set an Actions variable POPUNDER_URL to enable the
+          # open-an-ad-on-click behaviour. Left empty = popunder stays inert.
+          POPUNDER_URL: ${{ vars.POPUNDER_URL }}
+        run: |
+          set -euo pipefail
+          python3 scripts/inject-ads.py
+          grep -q "google-adsense-account" _site/index.html
+          ! grep -q '"googlesyndication.com"' _site/sw.js
+
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
