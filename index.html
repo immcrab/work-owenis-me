@@ -20,6 +20,25 @@
     <p class="loading">loading games&hellip;</p>
   </section>
 
+  <section class="games-group">
+    <h2 class="section-heading">Unofficial <span class="badge">community-submitted</span></h2>
+    <section class="games" id="games-unofficial">
+      <p class="loading">loading&hellip;</p>
+    </section>
+  </section>
+
+  <section class="submit-wrap">
+    <h2 class="section-heading">Add your own</h2>
+    <p class="submit-hint">Drop a link. A quick AI check confirms it loads, then it shows up under Unofficial.</p>
+    <form id="submit-form" class="submit-form">
+      <input type="text" id="submit-name" placeholder="Name" maxlength="60" required>
+      <input type="url" id="submit-url" placeholder="https://..." maxlength="500" required>
+      <input type="text" id="submit-desc" placeholder="Short description (optional)" maxlength="140">
+      <button type="submit" id="submit-btn">Submit</button>
+    </form>
+    <p id="submit-status" class="submit-status" role="status" aria-live="polite"></p>
+  </section>
+
   <footer>
     <a href="https://owenis.me">owenis.me</a>
     <span id="year"></span>

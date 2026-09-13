@@ -29,14 +29,22 @@
 
   var anonId = getAnonId();
   var container = document.getElementById("games");
+  var unofficialContainer = document.getElementById("games-unofficial");
   var template = document.getElementById("game-row-template");
   var configured = SUPABASE_URL.indexOf("__") !== 0;
   var supabase = configured
     ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
     : null;
 
-  function renderRows(rows, myVotes) {
-    container.innerHTML = "";
+  function renderRows(rows, myVotes, targetEl) {
+    targetEl.innerHTML = "";
+    if (!rows.length) {
+      var empty = document.createElement("p");
+      empty.className = "loading";
+      empty.textContent = "nothing here yet.";
+      targetEl.appendChild(empty);
+      return;
+    }
     rows.forEach(function (game) {
       var node = template.content.cloneNode(true);
       var article = node.querySelector(".game");
@@ -78,7 +86,7 @@
         castVote(game.slug, likeBtn, dislikeBtn, -1);
       });
 
-      container.appendChild(node);
+      targetEl.appendChild(node);
     });
   }
 
@@ -118,15 +126,18 @@
 
   function loadGames() {
     if (!supabase) {
-      renderRows(GAMES.map(function (g) { return Object.assign({}, g, { visits: 0, likes: 0, dislikes: 0 }); }), {});
+      var offlineRows = GAMES.map(function (g) { return Object.assign({}, g, { visits: 0, likes: 0, dislikes: 0 }); });
+      renderRows(offlineRows, {}, container);
+      renderRows([], {}, unofficialContainer);
       return;
     }
 
-    supabase.from("games").select("slug,name,url,visits,likes,dislikes").then(function (res) {
+    supabase.from("games").select("slug,name,description,url,category,status,visits,likes,dislikes").then(function (res) {
+      var rows = res.data || [];
       var bySlug = {};
-      (res.data || []).forEach(function (row) { bySlug[row.slug] = row; });
+      rows.forEach(function (row) { bySlug[row.slug] = row; });
 
-      var rows = GAMES.map(function (g) {
+      var officialRows = GAMES.map(function (g) {
         var row = bySlug[g.slug] || {};
         return {
           slug: g.slug,
@@ -139,13 +150,72 @@
         };
       });
 
+      var officialSlugs = {};
+      GAMES.forEach(function (g) { officialSlugs[g.slug] = true; });
+
+      var unofficialRows = rows
+        .filter(function (row) { return row.category === "Unofficial" && row.status === "approved" && !officialSlugs[row.slug]; })
+        .map(function (row) {
+          return {
+            slug: row.slug,
+            name: row.name,
+            desc: row.description || "",
+            url: row.url,
+            visits: row.visits || 0,
+            likes: row.likes || 0,
+            dislikes: row.dislikes || 0
+          };
+        });
+
       supabase.rpc("get_my_votes", { p_anon_id: anonId }).then(function (voteRes) {
         var myVotes = {};
         (voteRes.data || []).forEach(function (v) { myVotes[v.game_slug] = v.vote; });
-        renderRows(rows, myVotes);
+        renderRows(officialRows, myVotes, container);
+        renderRows(unofficialRows, myVotes, unofficialContainer);
+      });
+    });
+  }
+
+  function initSubmitForm() {
+    var form = document.getElementById("submit-form");
+    var status = document.getElementById("submit-status");
+    if (!form) return;
+
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+      if (!supabase) {
+        status.textContent = "Submissions need the backend configured.";
+        return;
+      }
+
+      var name = document.getElementById("submit-name").value.trim();
+      var url = document.getElementById("submit-url").value.trim();
+      var desc = document.getElementById("submit-desc").value.trim();
+      var btn = document.getElementById("submit-btn");
+
+      btn.disabled = true;
+      status.textContent = "Checking your link…";
+
+      supabase.functions.invoke("submit-game", {
+        body: { name: name, url: url, desc: desc, anon_id: anonId }
+      }).then(function (res) {
+        if (res.error || !res.data) {
+          status.textContent = "Something went wrong submitting that link. Try again later.";
+          return;
+        }
+        status.textContent = res.data.message || "Submitted.";
+        if (res.data.verdict === 1) {
+          form.reset();
+          loadGames();
+        }
+      }).catch(function () {
+        status.textContent = "Something went wrong submitting that link. Try again later.";
+      }).finally(function () {
+        btn.disabled = false;
       });
     });
   }
 
   loadGames();
+  initSubmitForm();
 })();
