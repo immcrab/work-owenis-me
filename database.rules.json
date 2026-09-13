@@ -1,0 +1,43 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "games": {
+      ".read": true,
+      "$slug": {
+        ".write": "(!data.exists() && newData.child('category').val() === 'Unofficial') || (data.exists() && newData.child('name').val() === data.child('name').val() && newData.child('url').val() === data.child('url').val() && newData.child('category').val() === data.child('category').val() && newData.child('description').val() === data.child('description').val() && newData.child('submittedBy').val() === data.child('submittedBy').val())",
+        ".validate": "newData.hasChildren(['name','url','category','status','visits','likes','dislikes'])",
+        "name": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 60" },
+        "description": { ".validate": "!newData.exists() || (newData.isString() && newData.val().length <= 140)" },
+        "url": { ".validate": "newData.isString() && newData.val().length <= 500 && newData.val().matches(/^https?:\\/\\/\\S+$/)" },
+        "category": { ".validate": "newData.val() === 'Official' || newData.val() === 'Unofficial'" },
+        "status": { ".validate": "newData.val() === 'approved'" },
+        "submittedBy": { ".validate": "!newData.exists() || (newData.isString() && newData.val().length <= 30)" },
+        "createdAt": { ".validate": "newData.isNumber()" },
+        "visits": { ".validate": "newData.isNumber() && newData.val() >= 0 && (!data.exists() || newData.val() === data.val() || newData.val() === data.val() + 1)" },
+        "likes": { ".validate": "newData.isNumber() && newData.val() >= 0 && (!data.exists() || newData.val() === data.val() || newData.val() === data.val() + 1 || newData.val() === data.val() - 1)" },
+        "dislikes": { ".validate": "newData.isNumber() && newData.val() >= 0 && (!data.exists() || newData.val() === data.val() || newData.val() === data.val() + 1 || newData.val() === data.val() - 1)" },
+        "$other": { ".validate": false }
+      }
+    },
+    "votes": {
+      "$anonId": {
+        ".read": true,
+        ".write": true,
+        "$slug": {
+          ".validate": "newData.val() === 1 || newData.val() === -1"
+        }
+      }
+    },
+    "submissions": {
+      "$anonId": {
+        ".read": true,
+        ".write": true,
+        ".indexOn": "createdAt",
+        "$pushId": {
+          ".validate": "newData.hasChildren(['url','slug','createdAt'])"
+        }
+      }
+    }
+  }
+}

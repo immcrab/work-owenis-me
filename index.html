@@ -44,6 +44,7 @@
         <input type="text" id="submit-name" placeholder="Name" maxlength="60" required>
         <input type="url" id="submit-url" placeholder="https://..." maxlength="500" required>
         <input type="text" id="submit-desc" placeholder="Short description (optional)" maxlength="140">
+        <input type="text" id="submit-username" placeholder="By: username (optional)" maxlength="30">
         <button type="submit" id="submit-btn">Submit</button>
       </form>
       <p id="submit-status" class="submit-status" role="status" aria-live="polite"></p>
@@ -76,7 +77,6 @@
   </article>
 </template>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-<script src="assets/app.js"></script>
+<script type="module" src="assets/app.js"></script>
 </body>
 </html>
