@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ghostlink</title>
+<title>Homework Central</title>
 <meta name="description" content="a curated hub of games and links, one click away">
 <link rel="stylesheet" href="assets/style.css">
 </head>
@@ -11,7 +11,7 @@
 <main>
   <header class="hero">
     <a class="back" href="https://owenis.me">&larr; owen</a>
-    <h1>ghostlink</h1>
+    <h1>Homework Central</h1>
     <p class="tagline">pick a game. open it. like it or don't.</p>
   </header>
 
@@ -26,13 +26,12 @@
 </main>
 
 <template id="game-row-template">
-  <article class="game" data-slug="">
+  <article class="game" data-slug="" role="button" tabindex="0">
     <div class="game-main">
       <h2 class="game-name"></h2>
       <p class="game-desc"></p>
     </div>
     <div class="game-actions">
-      <button class="open-btn" type="button">open &rarr;</button>
       <span class="visits"><span class="visits-count">0</span> visits</span>
       <div class="votes">
         <button class="vote-btn like" type="button" aria-pressed="false">

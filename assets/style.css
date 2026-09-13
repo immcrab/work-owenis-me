@@ -12,6 +12,19 @@
 
 * { box-sizing: border-box; }
 
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
 html, body {
   margin: 0;
   padding: 0;
@@ -29,6 +42,7 @@ main {
 
 .hero {
   margin-bottom: 48px;
+  animation: fade-up 0.5s ease both;
 }
 
 .back {
@@ -63,10 +77,31 @@ h1 {
   justify-content: space-between;
   align-items: center;
   gap: 24px;
-  padding: 22px 0;
+  padding: 22px 16px;
+  margin: 0 -16px;
   border-top: 1px solid var(--line);
+  border-radius: 8px;
   flex-wrap: wrap;
+  animation: fade-up 0.4s ease both;
+  transition: transform 0.15s ease, background 0.15s ease;
+  cursor: pointer;
 }
+
+.game:nth-child(1) { animation-delay: 0.05s; }
+.game:nth-child(2) { animation-delay: 0.1s; }
+.game:nth-child(3) { animation-delay: 0.15s; }
+.game:nth-child(4) { animation-delay: 0.2s; }
+.game:nth-child(5) { animation-delay: 0.25s; }
+
+.game:hover,
+.game:focus-visible {
+  transform: translateX(4px);
+  background: var(--accent-dim);
+}
+
+.game:active { transform: translateX(4px) scale(0.99); }
+
+.game:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
 
 .game:last-child { border-bottom: 1px solid var(--line); }
 
@@ -90,22 +125,6 @@ h1 {
   align-items: center;
   gap: 16px;
   flex-wrap: wrap;
-}
-
-.open-btn {
-  background: transparent;
-  border: 1px solid var(--accent);
-  color: var(--accent);
-  padding: 9px 16px;
-  border-radius: 6px;
-  font-size: 14px;
-  font-family: inherit;
-  cursor: pointer;
-  transition: background 0.15s ease, color 0.15s ease;
-}
-
-.open-btn:hover {
-  background: var(--accent-dim);
 }
 
 .visits {
@@ -133,10 +152,14 @@ h1 {
   font-family: inherit;
   font-size: 13px;
   cursor: pointer;
-  transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+  transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease, transform 0.1s ease;
 }
 
-.vote-btn .icon { font-size: 10px; line-height: 1; }
+.vote-btn:active { transform: scale(0.94); }
+
+.vote-btn .icon { font-size: 10px; line-height: 1; transition: transform 0.15s ease; }
+
+.vote-btn[aria-pressed="true"] .icon { transform: scale(1.15); }
 
 .vote-btn:hover { border-color: var(--muted); color: var(--text); }
 

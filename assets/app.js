@@ -1,12 +1,14 @@
 (function () {
   "use strict";
 
+  // Filled in after the Supabase project + schema are provisioned.
   var SUPABASE_URL = "https://qlehylbpigveqtcmidfm.supabase.co";
   var SUPABASE_ANON_KEY = "sb_publishable_ZjrSrwp1x9_Gh0iLMXdQKQ_oNgLU8jA";
 
   var GAMES = [
     { slug: "kiwi", name: "Kiwi", desc: "a game site, one click away", url: "https://kiwi.pxplay.top" },
-    { slug: "ghostlink", name: "Ghostlink", desc: "a curated hub of games and links", url: "https://immcrab.github.io/ghostlinkhub/" }
+    { slug: "ghostlink", name: "Ghostlink", desc: "a curated hub of games and links", url: "https://immcrab.github.io/ghostlinkhub/" },
+    { slug: "lucide", name: "Lucide", desc: "a game, one click away", url: "https://s3.amazonaws.com/lucidestatic/index.html" }
   ];
 
   document.getElementById("year").textContent = new Date().getFullYear();
@@ -51,9 +53,21 @@
       likeBtn.setAttribute("aria-pressed", myVote === 1);
       dislikeBtn.setAttribute("aria-pressed", myVote === -1);
 
-      node.querySelector(".open-btn").addEventListener("click", function () {
+      function openGame() {
         window.open(game.url, "_blank", "noopener");
         recordVisit(game.slug, article);
+      }
+
+      article.addEventListener("click", openGame);
+      article.addEventListener("keydown", function (e) {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          openGame();
+        }
+      });
+
+      node.querySelector(".votes").addEventListener("click", function (e) {
+        e.stopPropagation();
       });
 
       likeBtn.addEventListener("click", function () {
