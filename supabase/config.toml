@@ -1,4 +1,1 @@
 project_id = "qlehylbpigveqtcmidfm"
-
-[functions.submit-game]
-verify_jwt = true

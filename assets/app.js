@@ -176,10 +176,39 @@
     });
   }
 
-  function initSubmitForm() {
+  var SUBMIT_ERROR_MESSAGES = {
+    invalid_name: "Give it a name.",
+    invalid_url: "That doesn't look like a valid link (needs http:// or https://).",
+    invalid_anon: "Couldn't identify this browser — try reloading the page.",
+    rate_limited: "That's enough submissions for one day — try again tomorrow."
+  };
+
+  function initSubmitModal() {
+    var openBtn = document.getElementById("submit-open-btn");
+    var closeBtn = document.getElementById("submit-close-btn");
+    var overlay = document.getElementById("submit-modal-overlay");
     var form = document.getElementById("submit-form");
     var status = document.getElementById("submit-status");
-    if (!form) return;
+    if (!openBtn || !overlay || !form) return;
+
+    function openModal() {
+      overlay.hidden = false;
+      status.textContent = "";
+      document.getElementById("submit-name").focus();
+    }
+
+    function closeModal() {
+      overlay.hidden = true;
+    }
+
+    openBtn.addEventListener("click", openModal);
+    closeBtn.addEventListener("click", closeModal);
+    overlay.addEventListener("click", function (e) {
+      if (e.target === overlay) closeModal();
+    });
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape" && !overlay.hidden) closeModal();
+    });
 
     form.addEventListener("submit", function (e) {
       e.preventDefault();
@@ -194,28 +223,28 @@
       var btn = document.getElementById("submit-btn");
 
       btn.disabled = true;
-      status.textContent = "Checking your link…";
+      status.textContent = "Submitting…";
 
-      supabase.functions.invoke("submit-game", {
-        body: { name: name, url: url, desc: desc, anon_id: anonId }
-      }).then(function (res) {
-        if (res.error || !res.data) {
-          status.textContent = "Something went wrong submitting that link. Try again later.";
-          return;
-        }
-        status.textContent = res.data.message || "Submitted.";
-        if (res.data.verdict === 1) {
+      supabase.rpc("submit_game", { p_name: name, p_url: url, p_desc: desc || null, p_anon_id: anonId })
+        .then(function (res) {
+          if (res.error) {
+            var key = (res.error.message || "").trim();
+            status.textContent = SUBMIT_ERROR_MESSAGES[key] || "Something went wrong. Try again later.";
+            return;
+          }
+          status.textContent = "Added! Showing up under Unofficial now.";
           form.reset();
           loadGames();
-        }
-      }).catch(function () {
-        status.textContent = "Something went wrong submitting that link. Try again later.";
-      }).finally(function () {
-        btn.disabled = false;
-      });
+        })
+        .catch(function () {
+          status.textContent = "Something went wrong. Try again later.";
+        })
+        .finally(function () {
+          btn.disabled = false;
+        });
     });
   }
 
   loadGames();
-  initSubmitForm();
+  initSubmitModal();
 })();

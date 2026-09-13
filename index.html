@@ -21,23 +21,34 @@
   </section>
 
   <section class="games-group">
-    <h2 class="section-heading">Unofficial <span class="badge">community-submitted</span></h2>
+    <h2 class="section-heading">
+      Unofficial <span class="badge">community-submitted</span>
+      <button type="button" id="submit-open-btn" class="icon-btn" aria-haspopup="dialog" aria-controls="submit-modal" title="Add your own link">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7 8l5-5 5 5"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+        <span>Add yours</span>
+      </button>
+    </h2>
     <section class="games" id="games-unofficial">
       <p class="loading">loading&hellip;</p>
     </section>
   </section>
 
-  <section class="submit-wrap">
-    <h2 class="section-heading">Add your own</h2>
-    <p class="submit-hint">Drop a link. A quick AI check confirms it loads, then it shows up under Unofficial.</p>
-    <form id="submit-form" class="submit-form">
-      <input type="text" id="submit-name" placeholder="Name" maxlength="60" required>
-      <input type="url" id="submit-url" placeholder="https://..." maxlength="500" required>
-      <input type="text" id="submit-desc" placeholder="Short description (optional)" maxlength="140">
-      <button type="submit" id="submit-btn">Submit</button>
-    </form>
-    <p id="submit-status" class="submit-status" role="status" aria-live="polite"></p>
-  </section>
+  <div class="modal-overlay" id="submit-modal-overlay" hidden>
+    <div class="modal" id="submit-modal" role="dialog" aria-modal="true" aria-labelledby="submit-modal-title">
+      <div class="modal-header">
+        <h2 id="submit-modal-title">Add your own</h2>
+        <button type="button" class="modal-close" id="submit-close-btn" aria-label="Close">&times;</button>
+      </div>
+      <p class="submit-hint">Drop a link — it'll show up under Unofficial.</p>
+      <form id="submit-form" class="submit-form">
+        <input type="text" id="submit-name" placeholder="Name" maxlength="60" required>
+        <input type="url" id="submit-url" placeholder="https://..." maxlength="500" required>
+        <input type="text" id="submit-desc" placeholder="Short description (optional)" maxlength="140">
+        <button type="submit" id="submit-btn">Submit</button>
+      </form>
+      <p id="submit-status" class="submit-status" role="status" aria-live="polite"></p>
+    </div>
+  </div>
 
   <footer>
     <a href="https://owenis.me">owenis.me</a>

@@ -22,30 +22,21 @@ the `games` table (`slug`, `name`, `url`). These show under "Official".
 
 ## Community submissions ("Unofficial")
 
-Anyone can submit a link via the form on the page. It's handled by the
-`submit-game` Supabase Edge Function (`supabase/functions/submit-game`):
+The upload button next to the "Unofficial" heading opens a small modal.
+Submitting it calls the `submit_game` Postgres RPC (same pattern as
+`record_visit`/`cast_vote` — anon key can call the function, not write to
+`games` directly), which validates the name/URL, rate-limits to 5
+submissions per anon id per 24h, and inserts the row straight in with
+`category = 'Unofficial'`, `status = 'approved'`. No review step — it shows
+up immediately with the same visit/like/dislike wiring as official games.
+Every attempt is logged in `game_submission_log` for the rate limit.
 
-1. Takes a screenshot of the submitted URL via microlink.io.
-2. Sends the screenshot to a vision model (Mistral Large 3) with a prompt
-   asking whether the page looks like it's actually working.
-3. If yes, inserts the game into `games` with `category = 'Unofficial'`,
-   `status = 'approved'` (service role, bypasses RLS) — it then shows up
-   under "Unofficial" and gets the same visit/like/dislike wiring as
-   official games.
-4. If no (or the screenshot fails), nothing is inserted; the submitter sees
-   why.
-
-Every attempt is logged in `game_submission_log`, which also caps
-submissions at 5 per anon id per 24h.
-
-### Deploying schema/function changes
+### Deploying schema changes
 
 ```bash
 npx supabase login
 npx supabase link --project-ref qlehylbpigveqtcmidfm
 npx supabase db push
-npx supabase secrets set MISTRAL_API_KEY=<your key>
-npx supabase functions deploy submit-game
 ```
 
 ## DNS
