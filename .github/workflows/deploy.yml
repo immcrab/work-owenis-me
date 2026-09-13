@@ -1,21 +1,15 @@
-name: Sync upstream & deploy to Pages
+name: Deploy router to Pages
 
 on:
-  # Run every 6 hours to pick up upstream changes
-  schedule:
-    - cron: "0 */6 * * *"
-  # Allow manual runs from the Actions tab
-  workflow_dispatch:
-  # Redeploy when the workflow itself changes
   push:
     branches: [main]
+  workflow_dispatch:
 
 permissions:
   contents: read
   pages: write
   id-token: write
 
-# Only one deploy at a time; let a running deploy finish
 concurrency:
   group: pages
   cancel-in-progress: false
@@ -24,45 +18,17 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout this repo
+      - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Clone upstream repo
-        run: |
-          set -euo pipefail
-          git clone --depth 1 https://github.com/virtuan4-max/ghostlinkhub.git upstream
-          rm -rf upstream/.git
 
       - name: Assemble site
         run: |
           set -euo pipefail
           rm -rf _site && mkdir _site
-          # Copy every upstream file except the Vercel config
-          rsync -a --exclude='vercel.json' upstream/ _site/
-          # ghostlinksinglefile.html becomes the landing page
-          cp _site/ghostlinksinglefile.html _site/index.html
-          # The single-file build loads its proxy worker + service worker from
-          # the site root, so hoist them out of proxy/ (Vercel did this via
-          # vercel.json rewrites, which we dropped).
-          cp upstream/proxy/sw.js _site/sw.js
-          cp upstream/proxy/bareworker.js _site/bareworker.js
-          # Custom domain + skip Jekyll processing
+          cp index.html _site/
+          cp -r assets _site/assets
           cp CNAME _site/CNAME
           touch _site/.nojekyll
-          test -s _site/index.html
-          test -s _site/sw.js
-          test -s _site/bareworker.js
-
-      - name: Inject ads
-        env:
-          # Optional: set an Actions variable POPUNDER_URL to enable the
-          # open-an-ad-on-click behaviour. Left empty = popunder stays inert.
-          POPUNDER_URL: ${{ vars.POPUNDER_URL }}
-        run: |
-          set -euo pipefail
-          python3 scripts/inject-ads.py
-          grep -q "google-adsense-account" _site/index.html
-          ! grep -q '"googlesyndication.com"' _site/sw.js
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3

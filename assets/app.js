@@ -1,0 +1,136 @@
+(function () {
+  "use strict";
+
+  var SUPABASE_URL = "https://qlehylbpigveqtcmidfm.supabase.co";
+  var SUPABASE_ANON_KEY = "sb_publishable_ZjrSrwp1x9_Gh0iLMXdQKQ_oNgLU8jA";
+
+  var GAMES = [
+    { slug: "kiwi", name: "Kiwi", desc: "a game site, one click away", url: "https://kiwi.pxplay.top" },
+    { slug: "ghostlink", name: "Ghostlink", desc: "a curated hub of games and links", url: "https://immcrab.github.io/ghostlinkhub/" }
+  ];
+
+  document.getElementById("year").textContent = new Date().getFullYear();
+
+  function getAnonId() {
+    try {
+      var id = localStorage.getItem("ghostlink_anon_id");
+      if (!id) {
+        id = (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random());
+        localStorage.setItem("ghostlink_anon_id", id);
+      }
+      return id;
+    } catch (e) {
+      return "anon";
+    }
+  }
+
+  var anonId = getAnonId();
+  var container = document.getElementById("games");
+  var template = document.getElementById("game-row-template");
+  var configured = SUPABASE_URL.indexOf("__") !== 0;
+  var supabase = configured
+    ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+    : null;
+
+  function renderRows(rows, myVotes) {
+    container.innerHTML = "";
+    rows.forEach(function (game) {
+      var node = template.content.cloneNode(true);
+      var article = node.querySelector(".game");
+      article.dataset.slug = game.slug;
+      node.querySelector(".game-name").textContent = game.name;
+      node.querySelector(".game-desc").textContent = game.desc;
+      node.querySelector(".visits-count").textContent = game.visits || 0;
+
+      var likeBtn = node.querySelector(".vote-btn.like");
+      var dislikeBtn = node.querySelector(".vote-btn.dislike");
+      likeBtn.querySelector(".count").textContent = game.likes || 0;
+      dislikeBtn.querySelector(".count").textContent = game.dislikes || 0;
+
+      var myVote = myVotes[game.slug] || 0;
+      likeBtn.setAttribute("aria-pressed", myVote === 1);
+      dislikeBtn.setAttribute("aria-pressed", myVote === -1);
+
+      node.querySelector(".open-btn").addEventListener("click", function () {
+        window.open(game.url, "_blank", "noopener");
+        recordVisit(game.slug, article);
+      });
+
+      likeBtn.addEventListener("click", function () {
+        castVote(game.slug, likeBtn, dislikeBtn, 1);
+      });
+      dislikeBtn.addEventListener("click", function () {
+        castVote(game.slug, likeBtn, dislikeBtn, -1);
+      });
+
+      container.appendChild(node);
+    });
+  }
+
+  function recordVisit(slug, article) {
+    if (!supabase) return;
+    supabase.rpc("record_visit", { p_slug: slug }).then(function (res) {
+      if (res.data && res.data.length && article) {
+        var el = article.querySelector(".visits-count");
+        if (el) el.textContent = res.data[0].visits;
+      }
+    });
+  }
+
+  function castVote(slug, likeBtn, dislikeBtn, value) {
+    if (!supabase) return;
+    var wasPressed = (value === 1 ? likeBtn : dislikeBtn).getAttribute("aria-pressed") === "true";
+    var newVote = wasPressed ? 0 : value;
+
+    likeBtn.disabled = true;
+    dislikeBtn.disabled = true;
+
+    supabase.rpc("cast_vote", { p_slug: slug, p_anon_id: anonId, p_vote: newVote })
+      .then(function (res) {
+        if (res.data && res.data.length) {
+          var row = res.data[0];
+          likeBtn.querySelector(".count").textContent = row.likes;
+          dislikeBtn.querySelector(".count").textContent = row.dislikes;
+          likeBtn.setAttribute("aria-pressed", row.my_vote === 1);
+          dislikeBtn.setAttribute("aria-pressed", row.my_vote === -1);
+        }
+      })
+      .finally(function () {
+        likeBtn.disabled = false;
+        dislikeBtn.disabled = false;
+      });
+  }
+
+  function loadGames() {
+    if (!supabase) {
+      renderRows(GAMES.map(function (g) { return Object.assign({}, g, { visits: 0, likes: 0, dislikes: 0 }); }), {});
+      return;
+    }
+
+    supabase.from("games").select("slug,name,url,visits,likes,dislikes").then(function (res) {
+      var bySlug = {};
+      (res.data || []).forEach(function (row) { bySlug[row.slug] = row; });
+
+      var rows = GAMES.map(function (g) {
+        var row = bySlug[g.slug] || {};
+        return {
+          slug: g.slug,
+          name: g.name,
+          desc: g.desc,
+          url: g.url,
+          visits: row.visits || 0,
+          likes: row.likes || 0,
+          dislikes: row.dislikes || 0
+        };
+      });
+
+      supabase.rpc("get_my_votes", { p_anon_id: anonId }).then(function (voteRes) {
+        var myVotes = {};
+        (voteRes.data || []).forEach(function (v) { myVotes[v.game_slug] = v.vote; });
+        renderRows(rows, myVotes);
+      });
+    });
+  }
+
+  loadGames();
+})();

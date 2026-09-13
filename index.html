@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ghostlink</title>
+<meta name="description" content="a curated hub of games and links, one click away">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<main>
+  <header class="hero">
+    <a class="back" href="https://owenis.me">&larr; owen</a>
+    <h1>ghostlink</h1>
+    <p class="tagline">pick a game. open it. like it or don't.</p>
+  </header>
+
+  <section class="games" id="games">
+    <p class="loading">loading games&hellip;</p>
+  </section>
+
+  <footer>
+    <a href="https://owenis.me">owenis.me</a>
+    <span id="year"></span>
+  </footer>
+</main>
+
+<template id="game-row-template">
+  <article class="game" data-slug="">
+    <div class="game-main">
+      <h2 class="game-name"></h2>
+      <p class="game-desc"></p>
+    </div>
+    <div class="game-actions">
+      <button class="open-btn" type="button">open &rarr;</button>
+      <span class="visits"><span class="visits-count">0</span> visits</span>
+      <div class="votes">
+        <button class="vote-btn like" type="button" aria-pressed="false">
+          <span class="icon">&#9650;</span><span class="count">0</span>
+        </button>
+        <button class="vote-btn dislike" type="button" aria-pressed="false">
+          <span class="icon">&#9660;</span><span class="count">0</span>
+        </button>
+      </div>
+    </div>
+  </article>
+</template>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>
