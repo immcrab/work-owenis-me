@@ -28,4 +28,4 @@ the `games` table (`slug`, `name`, `url`).
 
 The ghostlink game (mirrored from upstream, ad-injected) used to live here —
 it's now its own repo: [`immcrab/ghostlinkhub`](https://github.com/immcrab/ghostlinkhub),
-deployed to `https://immcrab.github.io/ghostlinkhub/`.
+deployed to `https://ghostlink.pxplay.top/`.

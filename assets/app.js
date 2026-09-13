@@ -7,7 +7,7 @@
 
   var GAMES = [
     { slug: "kiwi", name: "Kiwi", desc: "a game site, one click away", url: "https://kiwi.pxplay.top" },
-    { slug: "ghostlink", name: "Ghostlink", desc: "a curated hub of games and links", url: "https://immcrab.github.io/ghostlinkhub/" },
+    { slug: "ghostlink", name: "Ghostlink", desc: "a curated hub of games and links", url: "https://ghostlink.pxplay.top/" },
     { slug: "lucide", name: "Lucide", desc: "a game, one click away", url: "https://s3.amazonaws.com/lucidestatic/index.html" }
   ];
 
