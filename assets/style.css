@@ -195,4 +195,5 @@ footer a:hover { color: var(--text); }
   h1 { font-size: 34px; }
   .game { padding: 18px 0; }
   .game-actions { width: 100%; justify-content: space-between; }
+  .vote-btn { padding: 11px 14px; }
 }

@@ -8,7 +8,8 @@
   var GAMES = [
     { slug: "kiwi", name: "Kiwi", desc: "a game site, one click away", url: "https://kiwi.pxplay.top" },
     { slug: "ghostlink", name: "Ghostlink", desc: "a curated hub of games and links", url: "https://ghostlink.pxplay.top/" },
-    { slug: "lucide", name: "Lucide", desc: "a game, one click away", url: "https://s3.amazonaws.com/lucidestatic/index.html" }
+    { slug: "lucide", name: "Lucide", desc: "a game, one click away", url: "https://s3.amazonaws.com/lucidestatic/index.html" },
+    { slug: "study", name: "Study", desc: "a study guide, one click away", url: "https://s3.amazonaws.com/aphistory/study.html" }
   ];
 
   document.getElementById("year").textContent = new Date().getFullYear();
