@@ -60,6 +60,22 @@
     </div>
   </div>
 
+  <div class="modal-overlay" id="edit-modal-overlay" hidden>
+    <div class="modal" id="edit-modal" role="dialog" aria-modal="true" aria-labelledby="edit-modal-title">
+      <div class="modal-header">
+        <h2 id="edit-modal-title">Edit your link</h2>
+        <button type="button" class="modal-close" id="edit-close-btn" aria-label="Close">&times;</button>
+      </div>
+      <form id="edit-form" class="submit-form">
+        <input type="text" id="edit-name" placeholder="Name" maxlength="60" required>
+        <input type="url" id="edit-url" placeholder="https://..." maxlength="500" required>
+        <input type="text" id="edit-desc" placeholder="Short description (optional)" maxlength="140">
+        <button type="submit" id="edit-save-btn">Save</button>
+      </form>
+      <p id="edit-status" class="submit-status" role="status" aria-live="polite"></p>
+    </div>
+  </div>
+
   <footer>
     <a href="https://owenis.me">owenis.me</a>
     <span id="year"></span>
@@ -74,6 +90,10 @@
     </div>
     <div class="game-actions">
       <span class="visits"><span class="visits-count">0</span> visits</span>
+      <div class="owner-actions" hidden>
+        <button class="owner-btn edit-btn" type="button">Edit</button>
+        <button class="owner-btn delete-btn" type="button">Delete</button>
+      </div>
       <div class="votes">
         <button class="vote-btn like" type="button" aria-pressed="false">
           <span class="icon">&#9650;</span><span class="count">0</span>

@@ -4,6 +4,7 @@ import {
   ref,
   get,
   set,
+  update,
   remove,
   push,
   query,
@@ -41,6 +42,33 @@ import {
     } catch (e) {
       return "anon";
     }
+  }
+
+  var OFFICIAL_PASSWORD = "owen123";
+
+  function getMyGames() {
+    try {
+      return JSON.parse(localStorage.getItem("ghostlink_my_games") || "[]");
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function addMyGame(slug) {
+    try {
+      var mine = getMyGames();
+      if (mine.indexOf(slug) === -1) {
+        mine.push(slug);
+        localStorage.setItem("ghostlink_my_games", JSON.stringify(mine));
+      }
+    } catch (e) {}
+  }
+
+  function removeMyGame(slug) {
+    try {
+      var mine = getMyGames().filter(function (s) { return s !== slug; });
+      localStorage.setItem("ghostlink_my_games", JSON.stringify(mine));
+    } catch (e) {}
   }
 
   var anonId = getAnonId();
@@ -104,6 +132,24 @@ import {
       dislikeBtn.addEventListener("click", function () {
         castVote(game.slug, likeBtn, dislikeBtn, -1);
       });
+
+      if (getMyGames().indexOf(game.slug) !== -1) {
+        var ownerActions = node.querySelector(".owner-actions");
+        ownerActions.hidden = false;
+        ownerActions.addEventListener("click", function (e) {
+          e.stopPropagation();
+        });
+        node.querySelector(".edit-btn").addEventListener("click", function () {
+          openEditModal(game);
+        });
+        node.querySelector(".delete-btn").addEventListener("click", function () {
+          if (!confirm("Delete \"" + game.name + "\"?")) return;
+          remove(ref(db, "games/" + game.slug)).then(function () {
+            removeMyGame(game.slug);
+            loadGames();
+          });
+        });
+      }
 
       targetEl.appendChild(node);
     });
@@ -184,8 +230,13 @@ import {
         }
       });
 
+      function officialSortIndex(slug) {
+        var i = OFFICIAL_ORDER.indexOf(slug);
+        return i === -1 ? Infinity : i;
+      }
       officialRows.sort(function (a, b) {
-        return OFFICIAL_ORDER.indexOf(a.slug) - OFFICIAL_ORDER.indexOf(b.slug);
+        var diff = officialSortIndex(a.slug) - officialSortIndex(b.slug);
+        return diff !== 0 ? diff : b.createdAt - a.createdAt;
       });
       unofficialRows.sort(function (a, b) {
         return b.createdAt - a.createdAt;
@@ -276,11 +327,12 @@ import {
           return findFreeSlug(slugify(name));
         })
         .then(function (slug) {
+          var isOfficial = username === OFFICIAL_PASSWORD;
           return set(ref(db, "games/" + slug), {
             name: name,
             description: desc || null,
             url: url,
-            category: "Unofficial",
+            category: isOfficial ? "Official" : "Unofficial",
             status: "approved",
             submittedBy: username || null,
             visits: 0,
@@ -288,15 +340,20 @@ import {
             dislikes: 0,
             createdAt: serverTimestamp()
           }).then(function () {
+            addMyGame(slug);
             return push(ref(db, "submissions/" + anonId), {
               url: url,
               slug: slug,
               createdAt: serverTimestamp()
             });
+          }).then(function () {
+            return isOfficial;
           });
         })
-        .then(function () {
-          status.textContent = "Added! Showing up under Unofficial now.";
+        .then(function (isOfficial) {
+          status.textContent = isOfficial
+            ? "Added! Showing up under Official now."
+            : "Added! Showing up under Unofficial now.";
           form.reset();
           loadGames();
         })
@@ -313,6 +370,75 @@ import {
     });
   }
 
+  var editingSlug = null;
+
+  function openEditModal(game) {
+    editingSlug = game.slug;
+    document.getElementById("edit-status").textContent = "";
+    document.getElementById("edit-name").value = game.name || "";
+    document.getElementById("edit-url").value = game.url || "";
+    document.getElementById("edit-desc").value = game.desc || "";
+    document.getElementById("edit-modal-overlay").hidden = false;
+    document.getElementById("edit-name").focus();
+  }
+
+  function initEditModal() {
+    var closeBtn = document.getElementById("edit-close-btn");
+    var overlay = document.getElementById("edit-modal-overlay");
+    var form = document.getElementById("edit-form");
+    var status = document.getElementById("edit-status");
+    if (!overlay || !form) return;
+
+    function closeModal() {
+      overlay.hidden = true;
+      editingSlug = null;
+    }
+
+    closeBtn.addEventListener("click", closeModal);
+    overlay.addEventListener("click", function (e) {
+      if (e.target === overlay) closeModal();
+    });
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape" && !overlay.hidden) closeModal();
+    });
+
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+      if (!editingSlug) return;
+
+      var name = document.getElementById("edit-name").value.trim().slice(0, 60);
+      var url = document.getElementById("edit-url").value.trim().slice(0, 500);
+      var desc = document.getElementById("edit-desc").value.trim().slice(0, 140);
+      var btn = document.getElementById("edit-save-btn");
+
+      if (!name) {
+        status.textContent = "Give it a name.";
+        return;
+      }
+      if (!/^https?:\/\/\S+$/i.test(url)) {
+        status.textContent = "That doesn't look like a valid link (needs http:// or https://).";
+        return;
+      }
+
+      btn.disabled = true;
+      status.textContent = "Saving…";
+
+      update(ref(db, "games/" + editingSlug), {
+        name: name,
+        description: desc || null,
+        url: url
+      }).then(function () {
+        closeModal();
+        loadGames();
+      }).catch(function () {
+        status.textContent = "Something went wrong. Try again later.";
+      }).finally(function () {
+        btn.disabled = false;
+      });
+    });
+  }
+
   loadGames();
   initSubmitModal();
+  initEditModal();
 })();

@@ -181,6 +181,29 @@ h1 {
 
 .vote-btn:disabled { opacity: 0.5; cursor: default; }
 
+.owner-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.owner-actions[hidden] { display: none; }
+
+.owner-btn {
+  background: transparent;
+  border: 1px solid var(--line);
+  color: var(--muted);
+  padding: 7px 10px;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.owner-btn:hover { border-color: var(--muted); color: var(--text); }
+
+.owner-btn.delete-btn:hover { border-color: var(--down); color: var(--down); }
+
 .section-heading {
   font-size: 15px;
   font-weight: 500;
