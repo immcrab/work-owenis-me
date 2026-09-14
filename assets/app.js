@@ -327,7 +327,7 @@ import {
           return findFreeSlug(slugify(name));
         })
         .then(function (slug) {
-          var isOfficial = username === OFFICIAL_PASSWORD;
+          var isOfficial = username.toLowerCase() === OFFICIAL_PASSWORD;
           return set(ref(db, "games/" + slug), {
             name: name,
             description: desc || null,
